@@ -1,0 +1,38 @@
+include:
+  - template: 'Workflows/Branch-Pipelines.gitlab-ci.yml'
+
+.default-tags:
+  tags: [ruby-2.7]
+
+.bundle: &bundle
+  - bundle install -j $(sysctl -n hw.ncpu)
+
+cache:
+  key: stabibot
+  paths:
+    - booked_events.yml
+
+rubocop:
+  extends: .default-tags
+  except:
+    - schedules
+  before_script:
+    - *bundle
+  script:
+    - rubocop
+
+audit:
+  extends: .default-tags
+  script:
+    - gem install bundler-audit
+    - bundle audit check --update
+
+book events:
+  extends: .default-tags
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: always
+  before_script:
+    - *bundle
+  script:
+    - ruby bot.rb
