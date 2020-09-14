@@ -19,8 +19,9 @@ class StabiApi
     end
 
     def book_event(event_id:, personal_info:)
-      post('/', body: booking_request_body(event_id: event_id,
-                                           personal_info: personal_info))
+      res = post('/', body: booking_request_body(event_id: event_id,
+                                                 personal_info: personal_info))
+      raise "Event with id=#{event_id} could not be booked" unless res.code == 302
     end
 
     private
