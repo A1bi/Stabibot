@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
+require 'dotenv/load'
+
 require './stabi_api'
 require './booked_event'
+require './config'
 
 StabiApi.bookable_events.each do |event|
   next if BookedEvent.exist? event[:id]
@@ -9,12 +12,7 @@ StabiApi.bookable_events.each do |event|
   puts event
 
   # StabiApi.book_event(event_id: events.first[:id],
-  #                     personal_info: {
-  #                       surname: 'Foo',
-  #                       name: 'Bar',
-  #                       email: 'albo@a0s.de',
-  #                       institution: '1213456'
-  #                     })
+  #                     personal_info: Config.personal_info)
 
   BookedEvent.create(event[:id])
 end
