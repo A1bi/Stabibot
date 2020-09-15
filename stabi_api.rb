@@ -12,16 +12,22 @@ class StabiApi
   base_uri 'https://staatsbibliothek-berlin.de/vor-ort/oeffnungszeiten/' \
            'terminbuchung/terminbuchung-lesesaal/buchungsformular-lesesaal'
 
+  open_timeout 30
+
   class << self
     def bookable_events
-      html = get('/')
+      html = retry_after_timeout do
+        get('/')
+      end
       events_from_html(html)
     end
 
     def book_event(event_id:, personal_info:)
-      res = post('/', body: booking_request_body(event_id: event_id,
-                                                 personal_info: personal_info))
-      raise "Event with id=#{event_id} could not be booked" unless res.code == 302
+      res = retry_after_timeout(tries: 2) do
+        post('/', body: booking_request_body(event_id: event_id,
+                                             personal_info: personal_info))
+      end
+      raise "Event with id=#{event_id} could not be booked" if res.body.include? 'leider ausgebucht'
     end
 
     private
@@ -48,6 +54,18 @@ class StabiApi
       body.transform_keys do |key, _value|
         "#{FORM_INPUT_NAME}[input_#{key}]"
       end
+    end
+
+    def retry_after_timeout(tries: 3, &block)
+      retries ||= 0
+      block.call
+    rescue Net::OpenTimeout
+      if (retries += 1) < tries
+        puts "Request timed out, retrying (attempt ##{retries + 1})."
+        retry
+      end
+
+      raise "Request timed out #{retries} times, giving up."
     end
   end
 end
