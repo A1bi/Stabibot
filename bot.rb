@@ -16,7 +16,7 @@ end
 events.each do |event|
   next if BookedEvent.exist? event[:id]
 
-  if event[:date] < DateTime.now || event[:date].hour < 13 || event[:date].wednesday?
+  if event[:date] < Date.today.next_day || event[:date].hour > 12
     puts "Skipping event with id=#{event[:id]} as it does not match constraints."
     next
   end

@@ -5,7 +5,7 @@ require 'httparty'
 class StabiApi
   include HTTParty
 
-  EVENT_PATTERN = %r{<option value="(\d+)" ?(selected=selected)?>\w{2}., (\d{2}).(\d{2})., (\d{2}).(\d{2}) Uhr - Zugang zum Lesesaal</option>}.freeze # rubocop:disable Layout/LineLength
+  EVENT_PATTERN = %r{<option value="(\d+)" ?(selected=selected)?>\w{2}., (\d{1,2}).(\d{1,2})., (\d{1,2}).(\d{2}) Uhr - Zugang zum Lesesaal</option>}.freeze # rubocop:disable Layout/LineLength
   FORM_INPUT_NAME = 'tx_sbbknowledgeworkshop_pi1'
   FORM_STATIC_INPUTS = { data: 'on', init: 1 }.freeze
 
