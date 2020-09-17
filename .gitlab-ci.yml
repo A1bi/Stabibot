@@ -35,4 +35,4 @@ book events:
   before_script:
     - *bundle
   script:
-    - ruby bot.rb
+    - ruby bot.rb --delay $DELAY

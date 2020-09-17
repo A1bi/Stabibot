@@ -6,6 +6,12 @@ require './stabi_api'
 require './booked_event'
 require './config'
 
+if ARGV[0] == '--delay' && (seconds = ARGV[1].to_i).positive?
+  puts "Sleeping for #{seconds} seconds before querying open events..."
+  sleep seconds
+end
+
+puts 'Querying open events...'
 events = StabiApi.bookable_events
 
 if events.none?
