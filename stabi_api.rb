@@ -2,6 +2,8 @@
 
 require 'httparty'
 
+require './logger'
+
 class StabiApi
   include HTTParty
 
@@ -61,7 +63,7 @@ class StabiApi
       block.call
     rescue Net::OpenTimeout
       if (retries += 1) < tries
-        puts "Request timed out, retrying (attempt ##{retries + 1})."
+        Logger.log "Request timed out, retrying (attempt ##{retries + 1})."
         retry
       end
 

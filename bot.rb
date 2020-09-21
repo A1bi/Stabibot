@@ -5,25 +5,29 @@ require 'dotenv/load'
 require './stabi_api'
 require './booked_event'
 require './config'
+require './logger'
 
 if ARGV[0] == '--delay' && (seconds = ARGV[1].to_i).positive?
-  puts "Sleeping for #{seconds} seconds before querying open events..."
+  Logger.log "Sleeping for #{seconds} seconds before querying open events..."
   sleep seconds
 end
 
-puts 'Querying open events...'
+Logger.log 'Querying open events...'
 events = StabiApi.bookable_events
 
 if events.none?
-  puts 'No open events found.'
+  Logger.log 'No open events found.'
   exit true
 end
 
 events.each do |event|
-  next if BookedEvent.exist? event[:id]
+  if BookedEvent.exist? event[:id]
+    Logger.log "Skipping already booked #{Logger.event_description(event)}."
+    next
+  end
 
   if event[:date] < Date.today.next_day || event[:date].hour > 12
-    puts "Skipping event with id=#{event[:id]} as it does not match constraints."
+    Logger.log "Skipping #{Logger.event_description(event)} as it does not match constraints."
     next
   end
 
@@ -32,5 +36,5 @@ events.each do |event|
 
   BookedEvent.create(event[:id])
 
-  puts "Booked event with id=#{event[:id]}."
+  Logger.log "Booked #{Logger.event_description(event)}."
 end
