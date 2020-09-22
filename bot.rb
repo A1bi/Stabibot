@@ -31,7 +31,7 @@ events.each do |event|
     next
   end
 
-  StabiApi.book_event(event_id: events.first[:id],
+  StabiApi.book_event(event_id: event[:id],
                       personal_info: Config.personal_info)
 
   BookedEvent.create(event[:id])

@@ -16,8 +16,8 @@ class StabiApi
 
   class << self
     def bookable_events
-      html = retry_after_timeout(tries: 10) do
-        get('/', timeout: 5)
+      html = retry_after_timeout(tries: 4) do
+        get('/', timeout: 45)
       end
       events_from_html(html)
     end
@@ -57,7 +57,7 @@ class StabiApi
       end
     end
 
-    def retry_after_timeout(tries: 3, &block)
+    def retry_after_timeout(tries:, &block)
       retries ||= 0
       block.call
     rescue Net::OpenTimeout, Net::ReadTimeout
