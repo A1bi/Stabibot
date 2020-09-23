@@ -35,4 +35,4 @@ book events:
   before_script:
     - *bundle
   script:
-    - ruby bot.rb --delay $DELAY
+    - ruby bot.rb $MAX_ATTEMPTS
