@@ -51,13 +51,22 @@ class StabiApi
     end
 
     def booking_request_body(event_id:, personal_info:)
-      body = personal_info.dup
+      body = transformed_personal_info(personal_info)
       body[:event] = event_id
       body.merge!(FORM_STATIC_INPUTS)
 
       body.transform_keys do |key, _value|
         "#{FORM_INPUT_NAME}[input_#{key}]"
       end
+    end
+
+    def transformed_personal_info(info)
+      {
+        surname: info[:last_name],
+        name: info[:first_name],
+        email: info[:email],
+        institution: info[:pass_number]
+      }
     end
 
     def retry_after_timeout(tries:, &block)

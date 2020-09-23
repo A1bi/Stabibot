@@ -29,8 +29,11 @@ class EventBooker
 
   def book_event(event)
     log "Booking #{Logger.event_description(event)}..."
-    StabiApi.book_event(event_id: event[:id],
-                        personal_info: Config.personal_info)
+
+    Config.people.each do |person|
+      log "Booking for #{person[:first_name]} #{person[:last_name]}..."
+      StabiApi.book_event(event_id: event[:id], personal_info: person)
+    end
 
     add_booked_event(event)
     log "Successfully booked #{Logger.event_description(event)}."
