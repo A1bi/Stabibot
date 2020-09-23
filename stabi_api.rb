@@ -28,7 +28,7 @@ class StabiApi
                                              personal_info: personal_info),
                   timeout: 60)
       end
-      raise "Event with id=#{event_id} could not be booked" if res.body.include? 'leider ausgebucht'
+      raise "Failed to book event with id=#{event_id}, event is full." if res.body.include? 'leider ausgebucht'
     end
 
     private

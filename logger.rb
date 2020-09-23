@@ -4,6 +4,7 @@ class Logger
   class << self
     def log(message)
       puts "<#{Time.now}> #{message}"
+      $stdout.flush
     end
 
     def event_description(event)

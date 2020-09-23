@@ -31,10 +31,10 @@ events.each do |event|
     next
   end
 
+  Logger.log "Booking #{Logger.event_description(event)}..."
   StabiApi.book_event(event_id: event[:id],
                       personal_info: Config.personal_info)
 
   BookedEvent.create(event[:id])
-
-  Logger.log "Booked #{Logger.event_description(event)}."
+  Logger.log "Successfully booked #{Logger.event_description(event)}."
 end
