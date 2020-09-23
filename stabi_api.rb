@@ -29,7 +29,7 @@ class StabiApi
       res = retry_after_timeout(tries: 2) do
         post('/', body: booking_request_body(event_id: event_id,
                                              personal_info: personal_info),
-                  timeout: 60)
+                  timeout: 120)
       end
       raise "Failed to book event with id=#{event_id}, event is full." if res.body.include? 'leider ausgebucht'
     end
