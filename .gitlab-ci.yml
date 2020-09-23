@@ -14,8 +14,10 @@ cache:
 
 rubocop:
   extends: .default-tags
-  except:
-    - schedules
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: never
   before_script:
     - *bundle
   script:
@@ -23,6 +25,11 @@ rubocop:
 
 audit:
   extends: .default-tags
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+      when: delayed
+      start_in: 1 minute
   script:
     - gem install bundler-audit
     - bundle audit check --update
@@ -31,7 +38,6 @@ book events:
   extends: .default-tags
   rules:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
-      when: always
   before_script:
     - *bundle
   script:
