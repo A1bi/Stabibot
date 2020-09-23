@@ -2,6 +2,8 @@
 
 require 'yaml'
 
+require './config'
+
 class BookedEvent
   EVENTS_FILE_PATH = 'booked_events.yml'
 
@@ -11,7 +13,7 @@ class BookedEvent
     end
 
     def create(id)
-      return if exist? id
+      return if Config.simulate_booking? || exist?(id)
 
       event_ids << id
       persist_event_ids

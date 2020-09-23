@@ -2,6 +2,7 @@
 
 require 'httparty'
 
+require './config'
 require './logger'
 
 class StabiApi
@@ -23,6 +24,8 @@ class StabiApi
     end
 
     def book_event(event_id:, personal_info:)
+      return if Config.simulate_booking?
+
       res = retry_after_timeout(tries: 2) do
         post('/', body: booking_request_body(event_id: event_id,
                                              personal_info: personal_info),

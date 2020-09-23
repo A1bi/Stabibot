@@ -11,6 +11,10 @@ class Config
       }
     end
 
+    def simulate_booking?
+      ENV['SIMULATE_BOOKING'] == 'true'
+    end
+
     private
 
     def env_value(name)
