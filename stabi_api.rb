@@ -24,14 +24,17 @@ class StabiApi
     end
 
     def book_event(event_id:, personal_info:)
-      return if Config.simulate_booking?
+      if Config.simulate_booking?
+        sleep(rand(1..5))
+        return true
+      end
 
       res = retry_after_timeout(tries: 2) do
         post('/', body: booking_request_body(event_id: event_id,
                                              personal_info: personal_info),
                   timeout: 120)
       end
-      raise "Failed to book event with id=#{event_id}, event is full." if res.body.include? 'leider ausgebucht'
+      res&.body&.include?('leider ausgebucht')
     end
 
     private
@@ -78,7 +81,8 @@ class StabiApi
         retry
       end
 
-      raise "Request timed out #{retries} times, giving up."
+      Logger.log "Request timed out #{retries} times, giving up."
+      nil
     end
   end
 end

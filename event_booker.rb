@@ -30,13 +30,27 @@ class EventBooker
   def book_event(event)
     log "Booking #{Logger.event_description(event)}..."
 
-    Config.people.each do |person|
-      log "Booking for #{person[:first_name]} #{person[:last_name]}..."
-      StabiApi.book_event(event_id: event[:id], personal_info: person)
-    end
+    threads = book_event_for_people_concurrently(event)
 
-    add_booked_event(event)
-    log "Successfully booked #{Logger.event_description(event)}."
+    add_booked_event(event) if threads.any?(&:value)
+    return unless threads.all?(&:value)
+
+    log "Successfully booked #{Logger.event_description(event)} for all people."
+  end
+
+  def book_event_for_people_concurrently(event)
+    Config.people.map do |person|
+      Thread.new do
+        log_booking_for_person(person, '..')
+
+        success = StabiApi.book_event(event_id: event[:id], personal_info: person)
+
+        message = success ? 'succeeded' : 'failed'
+        log_booking_for_person(person, " #{message}")
+
+        success
+      end
+    end
   end
 
   def should_book_event?(event)
@@ -85,6 +99,10 @@ class EventBooker
     File.open(EVENTS_FILE_PATH, 'w') do |file|
       file.write({ 'ids' => booked_event_ids }.to_yaml)
     end
+  end
+
+  def log_booking_for_person(person, message)
+    log "Booking for #{person[:first_name]} #{person[:last_name]}#{message}."
   end
 
   def log(message)
