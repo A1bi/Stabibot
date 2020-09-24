@@ -59,7 +59,7 @@ class EventBooker
       return
     end
 
-    if event_matches_contraints?(event)
+    unless event_matches_contraints?(event)
       log "Skipping #{Logger.event_description(event)} as it does not match constraints."
       return
     end
@@ -72,7 +72,7 @@ class EventBooker
   end
 
   def event_matches_contraints?(event)
-    event[:date] < Date.today.next_day || event[:date].hour > 12
+    event[:date] > Date.today.next_day && event[:date].hour < 12
   end
 
   def add_booked_event(event)
