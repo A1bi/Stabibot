@@ -10,7 +10,7 @@ class StabiApi
 
   EVENT_PATTERN = %r{<option value="(\d+)" ?(selected=selected)?>\w{2}., (\d{1,2}).(\d{1,2})., (\d{1,2}).(\d{2}) Uhr - Zugang zum Lesesaal</option>}.freeze # rubocop:disable Layout/LineLength
   FORM_INPUT_NAME = 'tx_sbbknowledgeworkshop_pi1'
-  FORM_STATIC_INPUTS = { data: 'on', init: 1 }.freeze
+  FORM_STATIC_INPUTS = { data: 'on', init: 1, title: 1 }.freeze
 
   base_uri 'https://staatsbibliothek-berlin.de/vor-ort/oeffnungszeiten/' \
            'terminbuchung/terminbuchung-lesesaal/buchungsformular-lesesaal'
@@ -32,9 +32,11 @@ class StabiApi
       res = retry_after_timeout(tries: 2) do
         post('/', body: booking_request_body(event_id: event_id,
                                              personal_info: personal_info),
+                  follow_redirects: false,
                   timeout: 120)
       end
-      res&.body&.include?('leider ausgebucht')
+
+      res&.code == 302
     end
 
     private
