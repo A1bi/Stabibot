@@ -17,9 +17,7 @@ class StabiApi
 
   class << self
     def bookable_events
-      html = retry_after_timeout(tries: 4) do
-        get('/', timeout: 45)
-      end
+      html = get('/')
       events_from_html(html)
     end
 
@@ -29,13 +27,8 @@ class StabiApi
         return true
       end
 
-      res = retry_after_timeout(tries: 2) do
-        post('/', body: booking_request_body(event_id: event_id,
-                                             personal_info: personal_info),
-                  follow_redirects: false,
-                  timeout: 120)
-      end
-
+      res = post('/', body: booking_request_body(event_id: event_id,
+                                                 personal_info: personal_info))
       res&.code == 302
     end
 
@@ -72,6 +65,21 @@ class StabiApi
         email: info[:email],
         institution: info[:pass_number]
       }
+    end
+
+    def get(path)
+      retry_after_timeout(tries: 4) do
+        super(path, timeout: 45)
+      end
+    end
+
+    def post(path, options = {})
+      options[:timeout] = 120
+      options[:follow_redirects] = false
+
+      retry_after_timeout(tries: 2) do
+        super
+      end
     end
 
     def retry_after_timeout(tries:, &block)
