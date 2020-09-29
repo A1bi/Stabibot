@@ -85,7 +85,7 @@ class StabiApi
     def retry_after_timeout(tries:, &block)
       retries ||= 0
       block.call
-    rescue Net::OpenTimeout, Net::ReadTimeout
+    rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET
       if (retries += 1) < tries
         Logger.log "Request timed out, retrying (attempt ##{retries + 1})."
         retry
