@@ -17,7 +17,8 @@ class StabiApi
 
   class << self
     def bookable_events
-      html = get('/')
+      return [] if (html = get('/')).nil?
+
       events_from_html(html)
     end
 
@@ -68,7 +69,7 @@ class StabiApi
     end
 
     def get(path)
-      retry_after_timeout(tries: 4) do
+      retry_after_timeout do
         super(path, timeout: 45)
       end
     end
@@ -77,17 +78,17 @@ class StabiApi
       options[:timeout] = 120
       options[:follow_redirects] = false
 
-      retry_after_timeout(tries: 2) do
+      retry_after_timeout do
         super
       end
     end
 
-    def retry_after_timeout(tries:, &block)
+    def retry_after_timeout(tries: 5, &block)
       retries ||= 0
       block.call
-    rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET
+    rescue Timeout::Error, SystemCallError => e
       if (retries += 1) < tries
-        Logger.log "Request timed out, retrying (attempt ##{retries + 1})."
+        Logger.log "Raised #{e.class.name}, retrying (attempt ##{retries + 1})."
         retry
       end
 
