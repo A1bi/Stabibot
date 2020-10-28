@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'httparty'
+require 'fileutils'
 
 require './config'
 require './logger'
@@ -11,13 +12,15 @@ class StabiApi
   EVENT_PATTERN = %r{<option value="(\d+)" ?(selected=selected)?>\w{2}., (\d{1,2}).(\d{1,2})., (\d{1,2}).(\d{2}) Uhr - Zugang zum Lesesaal</option>}.freeze # rubocop:disable Layout/LineLength
   FORM_INPUT_NAME = 'tx_sbbknowledgeworkshop_pi1'
   FORM_STATIC_INPUTS = { data: 'on', init: 1, title: 1 }.freeze
+  REMOTE_RESPONSES_DIR = File.join(File.dirname(__FILE__), 'remote_responses').freeze
 
   base_uri 'https://staatsbibliothek-berlin.de/vor-ort/oeffnungszeiten/' \
            'terminbuchung/terminbuchung-lesesaal/buchungsformular-lesesaal'
 
   class << self
     def bookable_events
-      return [] if (html = get('/')).nil?
+      res = save_response(:bookable_events) { get('/') }
+      return [] if (html = res&.body).nil?
 
       events_from_html(html)
     end
@@ -28,8 +31,11 @@ class StabiApi
         return true
       end
 
-      res = post('/', body: booking_request_body(event_id: event_id,
-                                                 personal_info: personal_info))
+      res = save_response(:book_event) do
+        post('/', body: booking_request_body(event_id: event_id,
+                                             personal_info: personal_info))
+      end
+
       res&.code == 302
     end
 
@@ -83,6 +89,24 @@ class StabiApi
       end
     end
 
+    def save_response(filename)
+      res = yield
+
+      if Config.save_remote_responses?
+        FileUtils.mkdir_p(REMOTE_RESPONSES_DIR)
+        filename = "#{filename}_#{current_thread_index}"
+        path = File.join(REMOTE_RESPONSES_DIR, "#{filename}.txt")
+        File.write(path, format_response_for_file(res))
+      end
+
+      res
+    end
+
+    def format_response_for_file(res)
+      headers = res.headers.map { |name, value| "#{name}: #{value.join(',')}" }
+      [res.code, *headers, res.body].join("\n")
+    end
+
     def retry_after_timeout(tries: 5, &block)
       retries ||= 0
       block.call
@@ -94,6 +118,10 @@ class StabiApi
 
       Logger.log "Request timed out #{retries} times, giving up."
       nil
+    end
+
+    def current_thread_index
+      Thread.list.index(Thread.current)
     end
   end
 end

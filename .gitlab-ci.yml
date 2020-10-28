@@ -42,3 +42,10 @@ book events:
     - *bundle
   script:
     - ruby bot.rb $MAX_ATTEMPTS
+  artifacts:
+    name: remote_responses
+    expose_as: remote responses
+    paths:
+      - 'remote_responses/'
+    expire_in: 1 week
+

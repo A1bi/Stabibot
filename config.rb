@@ -3,6 +3,8 @@
 class Config
   class UndefinedPersonalInfoError < StandardError; end
 
+  BOOLEAN_VARIABLES = %w[simulate_booking save_remote_responses].freeze
+
   class << self
     def people
       (0..).each_with_object([]) do |i, people|
@@ -14,8 +16,10 @@ class Config
       end
     end
 
-    def simulate_booking?
-      ENV['SIMULATE_BOOKING'] == 'true'
+    BOOLEAN_VARIABLES.each do |variable_name|
+      define_method "#{variable_name}?" do
+        ENV[variable_name.upcase] == 'true'
+      end
     end
 
     private
